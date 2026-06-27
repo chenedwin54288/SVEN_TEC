@@ -10,6 +10,20 @@ const languages = {
 
 const routes = ["/", "/product", "/about", "/contact"];
 const inquiryRecipient = "contact@sven-tec.example";
+const assetPath = (path) => `${import.meta.env.BASE_URL}${path.replace(/^\/+/, "")}`;
+const appBasePath = import.meta.env.BASE_URL.replace(/\/$/, "");
+
+function toRoutePath(pathname) {
+  if (appBasePath && pathname.startsWith(appBasePath)) {
+    return pathname.slice(appBasePath.length) || "/";
+  }
+
+  return pathname || "/";
+}
+
+function toPublicPath(routePath) {
+  return `${appBasePath}${routePath === "/" ? "/" : routePath}`;
+}
 
 const copy = {
   zh: {
@@ -354,7 +368,8 @@ const copy = {
 };
 
 function normalizePath(pathname) {
-  return routes.includes(pathname) ? pathname : "/";
+  const routePath = toRoutePath(pathname);
+  return routes.includes(routePath) ? routePath : "/";
 }
 
 function App() {
@@ -374,7 +389,7 @@ function App() {
   }, []);
 
   const navigate = (nextPath) => {
-    window.history.pushState({}, "", nextPath);
+    window.history.pushState({}, "", toPublicPath(nextPath));
     setPath(normalizePath(nextPath));
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -405,7 +420,7 @@ function Header({ t, path, navigate, language, setLanguage }) {
 
   return (
     <header className="site-header">
-      <a className="brand" href="/" onClick={(event) => handleNav(event, "/", navigate)}>
+      <a className="brand" href={toPublicPath("/")} onClick={(event) => handleNav(event, "/", navigate)}>
         <span className="brand-mark">S</span>
         <span>
           <strong>SVEN TEC</strong>
@@ -416,7 +431,7 @@ function Header({ t, path, navigate, language, setLanguage }) {
         {items.map(([href, label]) => (
           <a
             key={href}
-            href={href}
+            href={toPublicPath(href)}
             className={path === href ? "active" : ""}
             onClick={(event) => handleNav(event, href, navigate)}
           >
@@ -443,17 +458,17 @@ function HomePage({ t, navigate }) {
     <>
       <section className="hero">
         <div className="hero-media" aria-hidden="true">
-          <img src="/assets/image1.jpg" alt="" />
+          <img src={assetPath("/assets/image1.jpg")} alt="" />
         </div>
         <div className="hero-content">
           <p className="eyebrow">{t.home.eyebrow}</p>
           <h1>{t.home.title}</h1>
           <p className="lead">{t.home.lead}</p>
           <div className="hero-actions">
-            <a href="/product" className="button primary" onClick={(event) => handleNav(event, "/product", navigate)}>
+            <a href={toPublicPath("/product")} className="button primary" onClick={(event) => handleNav(event, "/product", navigate)}>
               {t.home.primaryCta}
             </a>
-            <a href="/contact" className="button secondary" onClick={(event) => handleNav(event, "/contact", navigate)}>
+            <a href={toPublicPath("/contact")} className="button secondary" onClick={(event) => handleNav(event, "/contact", navigate)}>
               {t.home.secondaryCta}
             </a>
           </div>
@@ -475,14 +490,14 @@ function HomePage({ t, navigate }) {
           <h2>{t.home.introTitle}</h2>
           <p>{t.home.intro}</p>
         </div>
-        <img className="section-photo" src="/assets/image9.jpeg" alt="" />
+        <img className="section-photo" src={assetPath("/assets/image9.jpeg")} alt="" />
       </section>
 
       <section className="content-section">
         <div className="card-grid">
           {t.home.highlights.map((item) => (
             <article className="feature-card" key={item.title}>
-              <img src={item.icon} alt="" />
+              <img src={assetPath(item.icon)} alt="" />
               <h3>{item.title}</h3>
               <p>{item.text}</p>
             </article>
@@ -628,7 +643,7 @@ function PageHero({ eyebrow, title, lead, image }) {
         <h1>{title}</h1>
         <p className="lead">{lead}</p>
       </div>
-      <img src={image} alt="" />
+      <img src={assetPath(image)} alt="" />
     </section>
   );
 }
@@ -640,7 +655,7 @@ function Footer({ t, navigate }) {
         <strong>SVEN TEC</strong>
         <p>{t.footer.tagline}</p>
       </div>
-      <a href="/contact" onClick={(event) => handleNav(event, "/contact", navigate)}>
+      <a href={toPublicPath("/contact")} onClick={(event) => handleNav(event, "/contact", navigate)}>
         {t.nav.contact}
       </a>
       <small>© {new Date().getFullYear()} SVEN TEC. {t.footer.rights}</small>
